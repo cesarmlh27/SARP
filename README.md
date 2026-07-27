@@ -1,122 +1,156 @@
-# SAPR - Sistema Administrativo Profesional para Restaurante
+# SAPR
 
-SAPR es un sistema administrativo para **un restaurante fisico** (single-tenant), con enfoque operativo real:
-- salon (mesas y pedidos)
-- cocina (comandas digitales)
-- caja (pagos)
-- administracion (usuarios, productos, reportes)
+Sistema Administrativo Profesional para Restaurante.
 
-El sistema esta preparado para crecimiento a multiples sucursales en el futuro, sin implementar aun arquitectura multiempresa.
+SAPR es una plataforma full-stack orientada a operacion real de restaurante fisico (single-tenant), enfocada en flujo de salon, cocina y caja con control por roles.
 
-## 1. Enfoque del proyecto
+## Tabla de contenido
 
-Este proyecto **no es SaaS multiempresa**.
+1. [Vision del producto](#vision-del-producto)
+2. [Arquitectura y stack](#arquitectura-y-stack)
+3. [Capacidades funcionales](#capacidades-funcionales)
+4. [Modelo operativo de pedidos y comandas](#modelo-operativo-de-pedidos-y-comandas)
+5. [Seguridad y permisos](#seguridad-y-permisos)
+6. [Estructura del repositorio](#estructura-del-repositorio)
+7. [Puesta en marcha local](#puesta-en-marcha-local)
+8. [Configuracion](#configuracion)
+9. [API principal](#api-principal)
+10. [Calidad, build y troubleshooting](#calidad-build-y-troubleshooting)
+11. [Roadmap](#roadmap)
+12. [Licencia y autoria](#licencia-y-autoria)
 
-Reglas de negocio actuales:
-- No hay registro publico de usuarios.
-- Gestion de personal interno por roles operativos (admin, caja, cocina, mesero).
-- Se mantiene recuperacion de contrasena.
-- Pedidos y comandas se manejan como un flujo unificado del mismo ciclo operativo.
-- Productos sin control de stock (solo estado activo/inactivo).
+## Vision del producto
 
-## 2. Stack tecnologico
+SAPR busca resolver el ciclo operativo completo de un restaurante:
+
+- Salon: mesas, apertura de pedidos, seguimiento de estado.
+- Cocina: comandas digitales con transiciones operativas.
+- Caja: registro y conciliacion de pagos.
+- Administracion: catalogo, usuarios, roles y analitica.
+
+Alcance actual:
+
+- Modelo single-tenant (una operacion por instancia).
+- Sin auto-registro de usuarios (gestion interna).
+- Control de acceso basado en roles.
+- Flujo pedido/comanda unificado.
+
+## Arquitectura y stack
 
 ### Backend
+
 - Java 21
-- Spring Boot 4.1
+- Spring Boot
 - Spring Security + JWT
 - Spring Data JPA
 - PostgreSQL
-- Maven Wrapper (`mvnw`)
+- Maven Wrapper
 
 ### Frontend
-- React 19 + TypeScript
+
+- React + TypeScript
 - Vite
 - Material UI
 - TanStack Query
 - React Hook Form + Zod
 - Axios
 
-## 3. Estructura del repositorio
+### Estilo arquitectonico
+
+- Backend modular por feature con capas controller, service, repository, entity y dto.
+- Frontend organizado por feature folders, hooks de datos y servicios desacoplados.
+
+## Capacidades funcionales
+
+- Autenticacion JWT y recuperacion de contrasena.
+- Gestion de usuarios y roles.
+- Gestion de mesas y estados.
+- Pedidos con ciclo de vida completo.
+- Comandas digitales para cocina.
+- Productos y categorias con imagenes.
+- Pagos por pedido y liberacion de mesa.
+- Dashboard + reportes unificados con filtros de tiempo.
+
+## Modelo operativo de pedidos y comandas
+
+En SAPR, la comanda representa la vista de cocina de un pedido.
+
+Flujo:
+
+1. Apertura de pedido para mesa disponible.
+2. Adicion/edicion de items en comanda.
+3. Cocina inicia preparacion.
+4. Cocina marca pedido listo.
+5. Salon entrega.
+6. Caja registra pago y cierra ciclo.
+
+Estados del pedido:
+
+`PENDING -> IN_PROGRESS -> READY -> DELIVERED -> PAID`
+
+Reglas clave:
+
+- No se permite iniciar cocina sin items en comanda.
+- Los cambios de estado estan restringidos por rol.
+- Cancelaciones aplican en etapas controladas.
+
+## Seguridad y permisos
+
+### Endpoints publicos
+
+- `POST /api/auth/login`
+- `POST /api/auth/recover-password`
+- `POST /api/auth/reset-password`
+
+### Permisos por rol
+
+- `ADMIN`: acceso total.
+- `CAJERO`: acceso total operativo y administrativo.
+- `COCINA`: gestiona comandas en preparacion y listo.
+- `MESERO`: crea/gestiona pedidos propios y comandas asociadas.
+
+### UX defensiva
+
+- El menu se adapta al rol autenticado.
+- Rutas no autorizadas muestran pantalla de "Sin privilegios".
+
+## Estructura del repositorio
 
 ```text
 SAPR/
-  backend/     # API REST, seguridad, logica de negocio, persistencia
-  frontend/    # SPA administrativa
+  backend/     API REST, seguridad, logica de negocio y persistencia
+  frontend/    SPA administrativa
 ```
 
-Arquitectura backend por modulos: controller, service, repository, entity, dto.
+## Puesta en marcha local
 
-## 4. Modulos funcionales
+### Requisitos
 
-- Autenticacion y seguridad (JWT)
-- Usuarios y roles internos
-- Mesas
-- Pedidos
-- Comandas digitales (cocina)
-- Productos y categorias
-- Pagos
-- Dashboard y reportes base
-
-## 5. Flujo unificado Pedidos + Comandas
-
-En SAPR, una comanda es la representacion de cocina de un pedido.
-
-### Flujo operativo
-1. Se crea un pedido para una mesa disponible.
-2. Se agregan items a la comanda (productos y cantidades).
-3. Cocina toma la comanda y cambia estado.
-4. Salon entrega al cliente.
-5. Caja registra el pago.
-
-### Estados del pedido
-- `PENDING` -> `IN_PROGRESS` -> `READY` -> `DELIVERED` -> `PAID`
-- Cancelacion permitida solo en etapas controladas.
-- No se permite pasar a `IN_PROGRESS` sin items en la comanda.
-
-## 6. Seguridad y control de acceso
-
-- Endpoints publicos:
-  - `POST /api/auth/login`
-  - `POST /api/auth/recover-password`
-  - `POST /api/auth/reset-password`
-- Endpoints protegidos por rol para operaciones internas.
-
-### Matriz de permisos actual
-- `ADMIN`: acceso total.
-- `CAJERO`: acceso total operativo y administrativo.
-- `COCINA`: solo visualiza pedidos activos y puede pasarlos a `IN_PROGRESS`.
-- `MESERO`: crea pedidos, edita comandas, cancela pedidos propios y visualiza solo pedidos activos propios.
-
-### Comportamiento UX para evitar 403
-- Los modulos no permitidos se ocultan en el menu segun rol.
-- Si el usuario intenta abrir una ruta no permitida manualmente, la UI muestra "Sin privilegios".
-
-## 7. Ejecucion local
-
-## Requisitos
 - Java 21
 - Node.js 18+
+- PostgreSQL 14+
 - Docker (opcional)
-- PostgreSQL en `localhost:5432`
 
-Configuracion DB por defecto (backend):
+### Base de datos por defecto
+
+- Host: `localhost:5432`
 - DB: `sapr_db`
 - User: `user_sapr`
 - Password: `1234`
 
-### 7.1 Levantar backend
+### 1) Backend
 
 ```powershell
 cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-Backend:
-- API base: `http://localhost:8080/api`
+Servicios:
+
+- API: `http://localhost:8080/api`
 - Swagger: `http://localhost:8080/swagger-ui`
 
-### 7.2 Levantar frontend
+### 2) Frontend
 
 ```powershell
 cd frontend
@@ -124,10 +158,68 @@ npm install
 npm run dev
 ```
 
-Frontend:
-- `http://localhost:5173`
+Servicio:
 
-### 7.3 Build de validacion
+- App: `http://localhost:5173`
+
+### 3) Opcion Docker (backend + db)
+
+```powershell
+cd backend
+docker compose up --build
+```
+
+## Configuracion
+
+### Backend (`application.properties`)
+
+- `SPRING_PROFILES_ACTIVE` (ejemplo: `dev`)
+- `JWT_SECRET`
+- `JWT_EXPIRATION`
+- `CORS_ALLOWED_ORIGINS`
+- `APP_FRONTEND_URL`
+- `MAIN_ADMIN_EMAIL`
+- `MAIL_HOST`
+- `MAIL_PORT`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
+
+### Frontend (`.env`)
+
+- `VITE_API_URL` (default recomendado: `http://localhost:8080/api`)
+
+### Usuario inicial de desarrollo
+
+Si no existe administrador al arrancar, se crea automaticamente:
+
+- Email: `admin@sapr.com`
+- Password: `Admin1234!`
+
+Solo para entorno de desarrollo.
+
+## API principal
+
+Recursos principales:
+
+- `/api/auth`
+- `/api/users`
+- `/api/roles`
+- `/api/categories`
+- `/api/products`
+- `/api/tables`
+- `/api/orders`
+- `/api/order-details`
+- `/api/payments`
+- `/api/dashboard`
+
+Adicional para imagenes de producto:
+
+- Upload: `POST /api/products/{id}/image`
+- Render: `GET /api/products/{id}/image`
+
+## Calidad, build y troubleshooting
+
+### Build de validacion
 
 ```powershell
 # frontend
@@ -139,70 +231,23 @@ cd backend
 .\mvnw.cmd -DskipTests compile
 ```
 
-## 8. Ejecucion con Docker (backend + db)
+### Problemas frecuentes
 
-Desde `backend/`:
+- `npm rum dev`: typo. Comando correcto: `npm run dev`.
+- Error 403 por rol: cerrar sesion e iniciar con usuario de rol permitido.
+- CORS: revisar `CORS_ALLOWED_ORIGINS` en backend.
+- Conexion DB: validar credenciales y estado del servicio PostgreSQL.
 
-```powershell
-docker compose up --build
-```
+## Roadmap
 
-Luego levantar frontend en local (`npm run dev`).
+- Inventario y movimientos de stock.
+- Impresion termica de comandas.
+- Reporteria avanzada por turno, rango y colaborador.
+- Soporte multi-sucursal (sin romper modelo operativo actual).
+- Observabilidad y auditoria de eventos.
 
-## 9. Usuario inicial de desarrollo
+## Licencia y autoria
 
-Se crea automaticamente un administrador en arranque (si no existe):
-- Email: `admin@sapr.com`
-- Password: `Admin1234!`
+Proyecto desarrollado para uso academico/profesional y como base de evolucion para operacion de restaurante.
 
-Usar solo en entorno de desarrollo.
-
-## 10. Variables de entorno importantes
-
-Backend (`application.properties`):
-- `SPRING_PROFILES_ACTIVE` (default `dev`)
-- `JWT_SECRET`
-- `JWT_EXPIRATION`
-- `CORS_ALLOWED_ORIGINS`
-- `APP_FRONTEND_URL`
-- `MAIN_ADMIN_EMAIL`
-- `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
-
-Frontend:
-- `VITE_API_URL` (default `http://localhost:8080/api`)
-
-## 11. Pantallas clave del frontend
-
-- Login y recuperacion de contrasena
-- Pedidos y comandas (unificados en un mismo modulo con tabs)
-- Mesas
-- Productos / categorias
-- Pagos
-- Usuarios / roles
-- Dashboard / reportes
-
-## 12. Imagenes de productos
-
-- Upload por endpoint: `POST /api/products/{id}/image`.
-- Render por endpoint: `GET /api/products/{id}/image`.
-- El frontend agrega versionado en query string para evitar cache y reflejar la imagen recien subida.
-
-## 13. Buenas practicas aplicadas
-
-- Separacion por capas (controller/service/repository)
-- DTOs para contratos de API
-- Validaciones de flujo operativo
-- Control de permisos por endpoint y rol
-- Frontend desacoplado por servicios + hooks + feature folders
-- Manejo centralizado de errores en UI
-
-## 14. Roadmap sugerido
-
-- Inventario real (si se decide reintroducir stock)
-- Impresion termica de comanda (cocina)
-- Reportes avanzados por fecha/turno/empleado
-- Preparacion para sucursales (branch-aware) sin romper modelo single-tenant
-
----
-
-Proyecto desarrollado como base profesional para portafolio, enfocado en necesidades reales de operacion de restaurante.
+Si deseas contribuir, puedes proponer mejoras mediante issues y pull requests.
