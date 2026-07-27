@@ -207,8 +207,12 @@ Servicio:
 
 ```powershell
 cd backend
+copy .env.example .env
+# editar .env con secretos reales
 docker compose up --build
 ```
+
+En despliegue real, nunca uses valores por defecto de desarrollo en JWT, password de BD o password de administrador inicial.
 
 ## Configuracion
 
@@ -225,9 +229,13 @@ docker compose up --build
 - `MAIL_USERNAME`
 - `MAIL_PASSWORD`
 
+Para despliegue con contenedores usa [backend/.env.example](backend/.env.example) como plantilla.
+
 ### Frontend (`.env`)
 
 - `VITE_API_URL` (default recomendado: `http://localhost:8080/api`)
+
+Para build de frontend usa [frontend/.env.example](frontend/.env.example) como plantilla.
 
 ### Usuario inicial de desarrollo
 

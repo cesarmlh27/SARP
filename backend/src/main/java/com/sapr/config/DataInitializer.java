@@ -7,6 +7,7 @@ import com.sapr.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,12 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.security.main-admin-email:admin@sapr.com}")
+    private String mainAdminEmail;
+
+    @Value("${app.security.main-admin-password:Admin1234!}")
+    private String mainAdminPassword;
 
     @Override
     public void run(String... args) {
@@ -39,19 +46,19 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void initAdminUser() {
-        if (!userRepository.existsByEmail("admin@sapr.com")) {
+        if (!userRepository.existsByEmail(mainAdminEmail)) {
             RoleEntity adminRole = roleRepository.findByName("ADMIN")
                     .orElseThrow(() -> new RuntimeException("Rol ADMIN no encontrado"));
             userRepository.save(UserEntity.builder()
                     .firstName("Admin")
                     .lastName("SAPR")
-                    .email("admin@sapr.com")
-                    .password(passwordEncoder.encode("Admin1234!"))
+                .email(mainAdminEmail)
+                .password(passwordEncoder.encode(mainAdminPassword))
                     .enabled(true)
                     .role(adminRole)
                     .createdAt(LocalDateTime.now())
                     .build());
-            log.info("Usuario admin creado: admin@sapr.com / Admin1234!");
+            log.info("Usuario admin inicial creado: {}", mainAdminEmail);
         }
     }
 }
