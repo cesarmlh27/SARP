@@ -2,6 +2,10 @@
 
 Sistema Administrativo Profesional para Restaurante.
 
+<p align="center">
+  <img src="docs/images/logotipo-inicio.png" alt="SAPR Logo" width="260" />
+</p>
+
 SAPR es una plataforma full-stack orientada a operacion real de restaurante fisico (single-tenant), enfocada en flujo de salon, cocina y caja con control por roles.
 
 ## Tabla de contenido
@@ -9,15 +13,16 @@ SAPR es una plataforma full-stack orientada a operacion real de restaurante fisi
 1. [Vision del producto](#vision-del-producto)
 2. [Arquitectura y stack](#arquitectura-y-stack)
 3. [Capacidades funcionales](#capacidades-funcionales)
-4. [Modelo operativo de pedidos y comandas](#modelo-operativo-de-pedidos-y-comandas)
-5. [Seguridad y permisos](#seguridad-y-permisos)
-6. [Estructura del repositorio](#estructura-del-repositorio)
-7. [Puesta en marcha local](#puesta-en-marcha-local)
-8. [Configuracion](#configuracion)
-9. [API principal](#api-principal)
-10. [Calidad, build y troubleshooting](#calidad-build-y-troubleshooting)
-11. [Roadmap](#roadmap)
-12. [Licencia y autoria](#licencia-y-autoria)
+4. [Galeria visual](#galeria-visual)
+5. [Modelo operativo de pedidos y comandas](#modelo-operativo-de-pedidos-y-comandas)
+6. [Seguridad y permisos](#seguridad-y-permisos)
+7. [Estructura del repositorio](#estructura-del-repositorio)
+8. [Puesta en marcha local](#puesta-en-marcha-local)
+9. [Configuracion](#configuracion)
+10. [API principal](#api-principal)
+11. [Calidad, build y troubleshooting](#calidad-build-y-troubleshooting)
+12. [Roadmap](#roadmap)
+13. [Licencia y autoria](#licencia-y-autoria)
 
 ## Vision del producto
 
@@ -70,6 +75,42 @@ Alcance actual:
 - Productos y categorias con imagenes.
 - Pagos por pedido y liberacion de mesa.
 - Dashboard + reportes unificados con filtros de tiempo.
+
+## Galeria visual
+
+### Acceso y experiencia inicial
+
+![Pantalla de inicio de sesion](docs/images/inicio.png)
+
+### Operacion de salon
+
+![Gestion de mesas](docs/images/mesas.png)
+
+![Pedidos y comandas con selector visual de productos](docs/images/pedidos.png)
+
+### Operacion de cocina
+
+![Tablero de cocina y preparacion de comandas](docs/images/adminCocina.png)
+
+### Administracion comercial
+
+![Catalogo de productos](docs/images/productos.png)
+
+![Gestion de categorias](docs/images/categorias.png)
+
+![Registro de pagos](docs/images/pagos.png)
+
+### Administracion de acceso
+
+![Gestion de usuarios](docs/images/usuarios.png)
+
+![Gestion de roles](docs/images/roles.png)
+
+### Analitica y reportes
+
+![Dashboard y reportes unificados - vista general](docs/images/dashboard1.png)
+
+![Dashboard y reportes unificados - detalle de indicadores](docs/images/dashboard2.png)
 
 ## Modelo operativo de pedidos y comandas
 
