@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sapr_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sapr_db
+      POSTGRES_USER: user_sapr
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+    ports:
+      - "5432:5432"
+    volumes:
+      - sapr_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_sapr -d sapr_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: sapr_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/sapr_db
+      SPRING_DATASOURCE_USERNAME: user_sapr
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-1234}
+      JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production_min32chars!}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      UPLOAD_DIR: /app/uploads/products
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+    ports:
+      - "8080:8080"
+    volumes:
+      - sapr_uploads:/app/uploads
+
+volumes:
+  sapr_pgdata:
+  sapr_uploads:
